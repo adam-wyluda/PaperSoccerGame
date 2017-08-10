@@ -125,32 +125,30 @@ class GameWindow extends JFrame {
     val lowerStraight = List(Direction.S, Direction.E)
     val wallPoints    = board.wallPoints
 
-    wallPoints.foreachWithPos { (w, x, y) =>
-      for {
-        dir <- lowerStraight
-        (tx, ty) = dir.translate(x, y)
-        if (w && wallPoints.get(tx, ty).contains(w))
-      } g.drawLine(
-        calcX(x),
-        calcY(y),
-        calcX(tx),
-        calcY(ty)
-      )
-    }
+    for {
+      (w, x, y) <- wallPoints.withPos
+      dir       <- lowerStraight
+      (tx, ty) = dir.translate(x, y)
+      if (w && wallPoints.get(tx, ty).contains(w))
+    } g.drawLine(
+      calcX(x),
+      calcY(y),
+      calcX(tx),
+      calcY(ty)
+    )
 
     val lower = List(Direction.SW, Direction.S, Direction.SE, Direction.E)
-    board.matrix.foreachWithPos { (p, x, y) =>
-      for {
-        dir <- lower
-        if p.pointsTo(dir)
-        (tx, ty) = dir.translate(x, y)
-      } g.drawLine(
-        calcX(x),
-        calcY(y),
-        calcX(tx),
-        calcY(ty)
-      )
-    }
+    for {
+      (p, x, y) <- board.matrix.withPos
+      dir       <- lower
+      if p.pointsTo(dir)
+      (tx, ty) = dir.translate(x, y)
+    } g.drawLine(
+      calcX(x),
+      calcY(y),
+      calcX(tx),
+      calcY(ty)
+    )
 
     for ((x, y) <- pointable) {
       g.drawOval(

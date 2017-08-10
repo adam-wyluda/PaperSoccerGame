@@ -19,15 +19,14 @@ case class Matrix[A](
 
   def set(pt: (Int, Int))(a: A): Matrix[A] = set(pt._1, pt._2)(a)
 
+  def withPos: IndexedSeq[(A, Int, Int)] = array.zipWithIndex.map(overPos(Tuple3.apply).tupled)
+
   def mapWithPos[B](f: (A, Int, Int) => B): Matrix[B] =
     Matrix(
       width,
       height,
-      array.zipWithIndex.map(overPos(f).tupled)
+      withPos.map(f.tupled)
     )
-
-  def foreachWithPos(f: (A, Int, Int) => Unit): Unit =
-    array.zipWithIndex.foreach(overPos(f).tupled)
 
   def overPos[B](f: (A, Int, Int) => B): (A, Int) => B =
     (a, i) => {
