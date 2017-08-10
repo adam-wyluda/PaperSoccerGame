@@ -32,6 +32,18 @@ case class Point(
 
     matcher.lift.apply(direction)
   }
+
+  def pointsTo(direction: Direction): Boolean =
+    direction match {
+      case NW => nw
+      case N  => n
+      case NE => ne
+      case E  => e
+      case SE => se
+      case S  => s
+      case SW => sw
+      case W  => w
+    }
 }
 
 object Point {
