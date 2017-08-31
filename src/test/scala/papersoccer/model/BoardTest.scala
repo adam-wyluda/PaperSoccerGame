@@ -12,7 +12,7 @@ object BoardTest extends TestSuite {
     'point {
       'direction {
         'right {
-          val Right(result) = board.point(Direction.SE)
+          val Some(result) = board.point(Direction.SE)
           assert(result.from == Direction.SE.translate(board.from))
 
           val (px, py) = board.from
@@ -26,29 +26,30 @@ object BoardTest extends TestSuite {
         }
 
         'alreadyPointed {
-          val Right(next)                    = board.point(Direction.N)
-          val Left(MoveError.AlreadyPointed) = next.point(Direction.S)
+          val Some(next) = board.point(Direction.N)
+          assert(None == next.point(Direction.S))
         }
 
         'outsideBoard {
-          val newBoard                     = board.copy(from = (0, 0))
-          val Left(MoveError.OutsideBoard) = newBoard.point(Direction.N)
+          val newBoard = board.copy(from = (0, 0))
+          assert(None == newBoard.point(Direction.N))
         }
 
         'throughWall {
           def loop(board: Board, n: Int): Board =
-            if (n > 0) loop(board.point(Direction.E).right.get, n - 1)
+            if (n > 0) loop(board.point(Direction.E).get, n - 1)
             else board
 
           val beforeWall = loop(board, 4)
 
-          val Left(MoveError.ThroughWall) = beforeWall.point(Direction.E)
+          assert(None == beforeWall.point(Direction.E))
         }
       }
 
       'toNotConnected {
-        val Left(MoveError.NotConnected) =
-          board.point(Direction.N.translate(Direction.NW.translate(board.from)))
+        assert(
+          None ==
+            board.point(Direction.N.translate(Direction.NW.translate(board.from))))
       }
     }
 
@@ -59,7 +60,7 @@ object BoardTest extends TestSuite {
 
       'shootGoal {
         def loop(board: Board, n: Int): Board =
-          if (n > 0) loop(board.point(Direction.N).right.get, n - 1)
+          if (n > 0) loop(board.point(Direction.N).get, n - 1)
           else board
 
         val beforeGoal = loop(board, 5)

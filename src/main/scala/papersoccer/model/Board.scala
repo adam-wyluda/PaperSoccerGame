@@ -6,41 +6,29 @@ case class Board(
     matrix: Matrix[Point],
     from: (Int, Int)
 ) {
-  def point(direction: Direction): Either[MoveError, Board] =
+  def point(direction: Direction): Option[Board] =
     point(direction.translate(from))
 
-  def point(x: Int, y: Int): Either[MoveError, Board] = point((x, y))
+  def point(x: Int, y: Int): Option[Board] = point((x, y))
 
-  def point(to: (Int, Int)): Either[MoveError, Board] =
+  def point(to: (Int, Int)): Option[Board] =
     for {
-      direction <- Direction
-        .between(from, to)
-        .toRight(MoveError.NotConnected)
+      s0 <- matrix.get(from)
+      s1 <- matrix.get(to)
+      _  <- canPass(s0, s1)
 
-      s0 <- matrix
-        .get(from)
-        .toRight(MoveError.OutsideBoard)
-      s1 <- matrix
-        .get(to)
-        .toRight(MoveError.OutsideBoard)
-
-      _ <- canPass(s0, s1)
-
-      p0 <- s0
-        .pointTo(direction)
-        .toRight(MoveError.AlreadyPointed)
-      p1 <- s1
-        .pointTo(direction.reverse)
-        .toRight(MoveError.AlreadyPointed)
+      direction <- Direction.between(from, to)
+      p0        <- s0.pointTo(direction)
+      p1        <- s1.pointTo(direction.reverse)
 
       newMatrix = matrix
         .set(from)(p0)
         .set(to)(p1)
     } yield Board(newMatrix, to)
 
-  private def canPass(s0: Point, s1: Point): Either[MoveError, Unit] =
-    if (s0.kind.isBlocking && s1.kind.isBlocking) Left(MoveError.ThroughWall)
-    else Right(())
+  private def canPass(s0: Point, s1: Point): Option[Unit] =
+    if (s0.kind.isBlocking && s1.kind.isBlocking) None
+    else Some(())
 
   def dimension = (matrix.width, matrix.height)
 

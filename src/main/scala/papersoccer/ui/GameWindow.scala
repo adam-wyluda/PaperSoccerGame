@@ -4,7 +4,7 @@ import java.awt.Graphics
 import java.awt.event.{MouseAdapter, MouseEvent, MouseMotionAdapter}
 import javax.swing.JFrame
 
-import papersoccer.model.{Board, Direction, MoveError}
+import papersoccer.model.{Board, Direction}
 
 class GameWindow extends JFrame {
   private var boardOpt: Option[Board]       = None
@@ -55,16 +55,11 @@ class GameWindow extends JFrame {
     repaint()
   }
 
-  private def onClicked: Unit = {
-    for ((board, (x, y)) <- boardOpt zip closestPoint) {
-      board
-        .point(x, y)
-        .fold(
-          showError,
-          setBoard
-        )
-    }
-  }
+  private def onClicked: Unit =
+    for {
+      (board, (x, y)) <- boardOpt zip closestPoint
+      newBoard        <- board.point(x, y)
+    } setBoard(newBoard)
 
   private def updateSize(width: Int, height: Int): Unit = {
     val (pixelWidth, pixelHeight) = UiConsts.calcPixels(width, height)
@@ -81,7 +76,7 @@ class GameWindow extends JFrame {
     for {
       board  <- boardOpt
       (x, y) <- closestPoint
-      _      <- board.point(x, y).right.toOption
+      _      <- board.point(x, y)
     } yield (x, y)
 
   private def closestPoint: Option[(Int, Int)] =
@@ -158,9 +153,5 @@ class GameWindow extends JFrame {
         UiConsts.cursorSize
       )
     }
-  }
-
-  private def showError(error: MoveError): Unit = {
-    // TODO Show error
   }
 }
